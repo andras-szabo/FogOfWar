@@ -34,11 +34,6 @@ public class VM20 : MonoBehaviour
 
 			observer.HasUpdatedEver = true;
 
-			int observerAABBleft = Mathf.FloorToInt(observer.mapPositionX - observer.ViewRadiusMapUnits);
-			int observerAABBbottom = Mathf.FloorToInt(observer.mapPositionY - observer.ViewRadiusMapUnits);
-
-			int AABBsize = Mathf.CeilToInt(observer.ViewRadiusMapUnits * 2f) + 1;
-
 			int startX = Mathf.RoundToInt(observer.mapPositionX);
 			int startY = Mathf.RoundToInt(observer.mapPositionY);
 
