@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: VisibilityMask
-  m_Shader: {fileID: 4800000, guid: 59c342f298bc4a04bb15fd90544b018f, type: 3}
+  m_Name: ViewVolume
+  m_Shader: {fileID: 4800000, guid: 01afa08c1876e7f43b81fbc6ac55ec48, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -43,10 +43,6 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _Mask:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -60,49 +56,22 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _Aspect: 1.3333334
-    - _BLX: 0.24952087
-    - _BLY: 0.68617433
-    - _BRX: 0.49640766
-    - _BRY: 0.138999
-    - _Bottom: 0.6523321
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _Foo: 1
-    - _FooY: 1
-    - _FooZ: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _Left: 0.57007515
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Right: 0.5198041
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TLX: 0.5203815
-    - _TLY: 0.8087833
-    - _TRX: 0.7675179
-    - _TRY: 0.26141247
-    - _Top: 0.5224326
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _CamBottomLeft: {r: 0.049408957, g: -0.34392715, b: -0.22936046, a: 0}
-    - _CamBottomRight: {r: -0.12630777, g: -0.34388816, b: 0.1977894, a: 0}
-    - _CamDown: {r: 0.97486335, g: 0.09656311, b: -0.20079109, a: 0}
-    - _CamForward: {r: 0.9321692, g: -0.3068904, b: -0.19203885, a: 0}
-    - _CamLeft: {r: 0.90175724, g: -0.26250678, b: 0.3434008, a: 0}
-    - _CamRight: {r: 0.6926339, g: -0.2624015, b: -0.6718659, a: 0}
-    - _CamTopLeft: {r: -0.20680286, g: -0.13597809, b: -0.33477736, a: 0}
-    - _CamTopRight: {r: -0.3825196, g: -0.1359391, b: 0.09237251, a: 0}
-    - _CamUp: {r: 0.7359709, g: -0.65980697, b: -0.15166278, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _TerrainSize: {r: 1000, g: 600, b: 1000, a: 0}
-    - _VisibilityMapSize: {r: 1000, g: 1000, b: 0, a: 1}
