@@ -26,6 +26,11 @@ public class VM20 : MonoBehaviour
 		bool didUpdateAnything = false;
 		bool isLastUpdateInCycle = updateSpread - 1 == updateCycle;
 
+		if (updateCycle == 0)
+		{
+			discoveryMap.ClearCurrentVisibilityBlock();
+		}
+
 		for (int i = updateCycle; i < activeObservers.Count; i += updateSpread)
 		{
 			var observer = activeObservers[i];
@@ -65,14 +70,12 @@ public class VM20 : MonoBehaviour
 			discoveryMap.texture.SetPixels32(discoveryMap.asPixelBlock);
 		}
 
-		discoveryMap.currentVisibilityMap.SetPixels32(discoveryMap.currentVisibilityPixelBlock);
-
 		if (isLastUpdateInCycle)
 		{
-			discoveryMap.texture.Apply();
-			discoveryMap.currentVisibilityMap.Apply();
+			discoveryMap.texture.Apply(false);
 
-			discoveryMap.ClearCurrentVisibilityBlock();	
+			discoveryMap.currentVisibilityMap.SetPixels32(discoveryMap.currentVisibilityPixelBlock);
+			discoveryMap.currentVisibilityMap.Apply(false);
 		}
 	}
 
