@@ -25,6 +25,8 @@ public class VM20 : MonoBehaviour
 	{
 		bool didUpdateAnything = false;
 
+		discoveryMap.ClearCurrentVisibilityBlock();
+
 		foreach (var observer in activeObservers)
 		{
 			if (!forceUpdate && observer.HasUpdatedEver && !observer.HasMovedSinceLastUpdate)
@@ -65,14 +67,21 @@ public class VM20 : MonoBehaviour
 
 		if (didUpdateAnything)
 		{
-			FixAllHoles(discoveryMap.asPixelBlock, discoveryMap.pixelWidth);
+			FixAllHoles(discoveryMap, discoveryMap.pixelWidth);
 			discoveryMap.texture.SetPixels32(discoveryMap.asPixelBlock);
 			discoveryMap.texture.Apply();
 		}
+
+		//TODO
+		discoveryMap.currentVisibilityMap.SetPixels32(discoveryMap.currentVisibilityPixelBlock);
+		discoveryMap.currentVisibilityMap.Apply();
 	}
 
-	private static void FixAllHoles(Color32[] pixelBlock, int blockWidth)
+	private static void FixAllHoles(DiscoveryMap discoveryMap, int blockWidth)
 	{
+		var pixelBlock = discoveryMap.asPixelBlock;
+		var currentVis = discoveryMap.currentVisibilityPixelBlock;
+
 		int len = pixelBlock.Length;
 		for (int i = 0; i < pixelBlock.Length; ++i)
 		{
@@ -86,6 +95,7 @@ public class VM20 : MonoBehaviour
 					i - 1 > 0 && pixelBlock[i - 1].a > 0)
 				{
 					pixelBlock[i] = discovered;
+					currentVis[i] = discovered;
 				}
 			}
 		}
@@ -94,6 +104,8 @@ public class VM20 : MonoBehaviour
 	private static bool DiscoverLOS(DiscoveryMap map, int deltaX, int deltaY, int startX, int startY, float obsHeight)
 	{
 		var pixelBlock = map.asPixelBlock;
+		var currentVisibilityBlock = map.currentVisibilityPixelBlock;
+
 		var heightArray = map.heightMap;
 
 		int mapPixelWidth = map.pixelWidth;
@@ -174,9 +186,10 @@ public class VM20 : MonoBehaviour
 				int index = ((startY + wDeltaY[j]) * mapPixelWidth) + startX + wDeltaX[j];
 				if (wBlockerHeight[j] < 0f)
 				{
-					if (index < maxLen && pixelBlock[index].a <= 0)
+					if (index < maxLen)// && pixelBlock[index].a <= 0)
 					{
 						pixelBlock[index] = discovered;
+						currentVisibilityBlock[index] = discovered;
 						didUpdate = true;
 					}
 				}
@@ -185,9 +198,10 @@ public class VM20 : MonoBehaviour
 					if (currentHeight >= wBlockerHeight[j])
 					{
 						wBlockerHeight[j] = currentHeight;
-						if (index < maxLen && pixelBlock[index].a <= 0)
+						if (index < maxLen)// && pixelBlock[index].a <= 0)
 						{
 							pixelBlock[index] = discovered;
+							currentVisibilityBlock[index] = discovered;
 							didUpdate = true;
 						}
 					}
@@ -199,6 +213,7 @@ public class VM20 : MonoBehaviour
 	}
 
 	public Material discoveryMapMaterial;
+	public Material stencilMarkerMaterial;
 	public float updateIntervalSeconds = 0.1f;
 	public bool forceUpdate;
 
@@ -219,6 +234,7 @@ public class VM20 : MonoBehaviour
 	{
 		discoveryMap = new DiscoveryMap(terrain);
 		discoveryMapMaterial.SetTexture("_Mask", discoveryMap.texture);
+		stencilMarkerMaterial.SetTexture("_CurrentVisibilityMap", discoveryMap.currentVisibilityMap);
 		discoveryMapMaterial.SetVector("_TerrainSize", discoveryMap.terrainSize);
 		mainCamera = Camera.main;
 		mainCamTransform = mainCamera.transform;
