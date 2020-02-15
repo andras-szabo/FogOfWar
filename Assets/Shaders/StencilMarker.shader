@@ -3,6 +3,7 @@
     Properties
     {
 		_CurrentVisibilityMap("CurrentVisibility", 2D) = "white" {}
+		_TerrainSize("Terrain size", Vector) = (1000, 100, 1000)
     }
     SubShader
     {
@@ -13,7 +14,7 @@
 		Stencil
 		{
 			Ref 1
-			Comp always
+			Comp notequal
 			Pass replace
 		}
 
@@ -36,6 +37,7 @@
             };
 
 			sampler2D _CurrentVisibilityMap;
+			float3 _TerrainSize;
 
             v2f vert (appdata v)
             {
@@ -43,8 +45,8 @@
 
                 o.vertex = UnityObjectToClipPos(v.vertex);
 				float4 worldSpaceVertex = mul(unity_ObjectToWorld, v.vertex);
-				o.uv = float2(worldSpaceVertex.x / 1000.0, 
-							  worldSpaceVertex.z / 1000.0);
+				o.uv = float2(worldSpaceVertex.x / _TerrainSize.x,
+							  worldSpaceVertex.z / _TerrainSize.z);
 
                 return o;
             }

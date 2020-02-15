@@ -67,7 +67,7 @@ public class VM20 : MonoBehaviour
 
 		if (didUpdateAnything)
 		{
-			FixAllHoles(discoveryMap, discoveryMap.pixelWidth);
+			//FixAllHoles(discoveryMap, discoveryMap.pixelWidth);
 			discoveryMap.texture.SetPixels32(discoveryMap.asPixelBlock);
 			discoveryMap.texture.Apply();
 		}
@@ -83,16 +83,14 @@ public class VM20 : MonoBehaviour
 		var currentVis = discoveryMap.currentVisibilityPixelBlock;
 
 		int len = pixelBlock.Length;
-		for (int i = 0; i < pixelBlock.Length; ++i)
+		for (int i = blockWidth + 1; i < len - blockWidth; ++i)
 		{
-			int x = i % blockWidth;
-			int y = i / blockWidth;
 			if (pixelBlock[i].a <= 0)
 			{
-				if (i + blockWidth < len && pixelBlock[i + blockWidth].a > 0 &&
-					i - blockWidth > 0 && pixelBlock[i - blockWidth].a > 0 &&
-					i + 1 < len && pixelBlock[i + 1].a > 0 &&
-					i - 1 > 0 && pixelBlock[i - 1].a > 0)
+				if (pixelBlock[i - 1].a > 0 &&
+					pixelBlock[i + 1].a > 0 &&
+					pixelBlock[i + blockWidth].a > 0 &&
+					pixelBlock[i - blockWidth].a > 0)
 				{
 					pixelBlock[i] = discovered;
 					currentVis[i] = discovered;
@@ -166,7 +164,6 @@ public class VM20 : MonoBehaviour
 				int y = startY + wDeltaY[j];
 				int x = startX + wDeltaX[j];
 
-
 				if (x < 0 || x >= mapPixelWidth || y < 0 || y >= mapPixelHeight)
 				{
 					continue;
@@ -190,6 +187,14 @@ public class VM20 : MonoBehaviour
 					{
 						pixelBlock[index] = discovered;
 						currentVisibilityBlock[index] = discovered;
+
+						//experimental:
+						if (index + mapPixelWidth < maxLen)
+						{
+							pixelBlock[index + mapPixelWidth] = discovered;
+							currentVisibilityBlock[index + mapPixelWidth] = discovered;
+						}
+
 						didUpdate = true;
 					}
 				}
@@ -202,6 +207,14 @@ public class VM20 : MonoBehaviour
 						{
 							pixelBlock[index] = discovered;
 							currentVisibilityBlock[index] = discovered;
+
+							//experimental:
+							if (index + mapPixelWidth < maxLen)
+							{
+								pixelBlock[index + mapPixelWidth] = discovered;
+								currentVisibilityBlock[index + mapPixelWidth] = discovered;
+							}
+
 							didUpdate = true;
 						}
 					}
@@ -236,6 +249,8 @@ public class VM20 : MonoBehaviour
 		discoveryMapMaterial.SetTexture("_Mask", discoveryMap.texture);
 		stencilMarkerMaterial.SetTexture("_CurrentVisibilityMap", discoveryMap.currentVisibilityMap);
 		discoveryMapMaterial.SetVector("_TerrainSize", discoveryMap.terrainSize);
+		stencilMarkerMaterial.SetVector("_TerrainSize", discoveryMap.terrainSize);
+
 		mainCamera = Camera.main;
 		mainCamTransform = mainCamera.transform;
 	}
