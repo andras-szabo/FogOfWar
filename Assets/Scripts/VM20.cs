@@ -21,19 +21,14 @@ public class VM20 : MonoBehaviour
 		}
 	}
 
-	public static void UpdateDiscoveryStatus(DiscoveryMap discoveryMap, IEnumerable<Observer> activeObservers, bool forceUpdate = false)
+	public static void UpdateDiscoveryStatus(DiscoveryMap discoveryMap, List<Observer> activeObservers, int updateSpread, int updateCycle)
 	{
 		bool didUpdateAnything = false;
+		bool isLastUpdateInCycle = updateSpread - 1 == updateCycle;
 
-		discoveryMap.ClearCurrentVisibilityBlock();
-
-		foreach (var observer in activeObservers)
+		for (int i = updateCycle; i < activeObservers.Count; i += updateSpread)
 		{
-			if (!forceUpdate && observer.HasUpdatedEver && !observer.HasMovedSinceLastUpdate)
-			{
-				continue;
-			}
-
+			var observer = activeObservers[i];
 			observer.HasUpdatedEver = true;
 
 			int startX = Mathf.RoundToInt(observer.mapPositionX);
@@ -67,35 +62,17 @@ public class VM20 : MonoBehaviour
 
 		if (didUpdateAnything)
 		{
-			//FixAllHoles(discoveryMap, discoveryMap.pixelWidth);
 			discoveryMap.texture.SetPixels32(discoveryMap.asPixelBlock);
-			discoveryMap.texture.Apply();
 		}
 
-		//TODO
 		discoveryMap.currentVisibilityMap.SetPixels32(discoveryMap.currentVisibilityPixelBlock);
-		discoveryMap.currentVisibilityMap.Apply();
-	}
 
-	private static void FixAllHoles(DiscoveryMap discoveryMap, int blockWidth)
-	{
-		var pixelBlock = discoveryMap.asPixelBlock;
-		var currentVis = discoveryMap.currentVisibilityPixelBlock;
-
-		int len = pixelBlock.Length;
-		for (int i = blockWidth + 1; i < len - blockWidth; ++i)
+		if (isLastUpdateInCycle)
 		{
-			if (pixelBlock[i].a <= 0)
-			{
-				if (pixelBlock[i - 1].a > 0 &&
-					pixelBlock[i + 1].a > 0 &&
-					pixelBlock[i + blockWidth].a > 0 &&
-					pixelBlock[i - blockWidth].a > 0)
-				{
-					pixelBlock[i] = discovered;
-					currentVis[i] = discovered;
-				}
-			}
+			discoveryMap.texture.Apply();
+			discoveryMap.currentVisibilityMap.Apply();
+
+			discoveryMap.ClearCurrentVisibilityBlock();	
 		}
 	}
 
@@ -181,41 +158,30 @@ public class VM20 : MonoBehaviour
 				}
 
 				int index = ((startY + wDeltaY[j]) * mapPixelWidth) + startX + wDeltaX[j];
-				if (wBlockerHeight[j] < 0f)
+
+				bool hasNotFoundBlockerYet = wBlockerHeight[j] < 0f;
+				bool currentHeightHigherThanLastBlocker = currentHeight >= wBlockerHeight[j];
+
+				if (hasNotFoundBlockerYet || currentHeightHigherThanLastBlocker)
 				{
-					if (index < maxLen)// && pixelBlock[index].a <= 0)
+					if (currentHeight > wBlockerHeight[j] && !hasNotFoundBlockerYet)
 					{
+						wBlockerHeight[j] = currentHeight;
+					}
+
+					if (index < maxLen)
+					{
+						didUpdate = didUpdate || pixelBlock[i].a <= 0;
+
 						pixelBlock[index] = discovered;
 						currentVisibilityBlock[index] = discovered;
 
-						//experimental:
+						// Paint an extra pixel to cover accidental holes
+
 						if (index + mapPixelWidth < maxLen)
 						{
 							pixelBlock[index + mapPixelWidth] = discovered;
 							currentVisibilityBlock[index + mapPixelWidth] = discovered;
-						}
-
-						didUpdate = true;
-					}
-				}
-				else
-				{
-					if (currentHeight >= wBlockerHeight[j])
-					{
-						wBlockerHeight[j] = currentHeight;
-						if (index < maxLen)// && pixelBlock[index].a <= 0)
-						{
-							pixelBlock[index] = discovered;
-							currentVisibilityBlock[index] = discovered;
-
-							//experimental:
-							if (index + mapPixelWidth < maxLen)
-							{
-								pixelBlock[index + mapPixelWidth] = discovered;
-								currentVisibilityBlock[index + mapPixelWidth] = discovered;
-							}
-
-							didUpdate = true;
 						}
 					}
 				}
@@ -228,11 +194,12 @@ public class VM20 : MonoBehaviour
 	public Material discoveryMapMaterial;
 	public Material stencilMarkerMaterial;
 	public float updateIntervalSeconds = 0.1f;
-	public bool forceUpdate;
+
+	public int updateSpread = 4;
+	private int currentUpdateCycle = 0;
 
 	private DiscoveryMap discoveryMap;
 	private Terrain terrain;
-	private float elapsedSinceLastUpdate = 0f;
 	private Camera mainCamera;
 	private Transform mainCamTransform;
 	private Vector3[] mainCamFrustumPos = new Vector3[4];
@@ -246,6 +213,7 @@ public class VM20 : MonoBehaviour
 	private void Start()
 	{
 		discoveryMap = new DiscoveryMap(terrain);
+
 		discoveryMapMaterial.SetTexture("_Mask", discoveryMap.texture);
 		stencilMarkerMaterial.SetTexture("_CurrentVisibilityMap", discoveryMap.currentVisibilityMap);
 		discoveryMapMaterial.SetVector("_TerrainSize", discoveryMap.terrainSize);
@@ -259,15 +227,8 @@ public class VM20 : MonoBehaviour
 	{
 		UpdateCamera();
 
-		elapsedSinceLastUpdate += Time.deltaTime;
-		if (elapsedSinceLastUpdate >= updateIntervalSeconds)
-		{
-			elapsedSinceLastUpdate -= updateIntervalSeconds;
-			if (discoveryMap != null)
-			{
-				UpdateDiscoveryStatus(discoveryMap, EntityManager.GetActiveObservers(), forceUpdate);
-			}
-		}
+		UpdateDiscoveryStatus(discoveryMap, EntityManager.GetActiveObservers(), updateSpread, currentUpdateCycle);
+		currentUpdateCycle = (currentUpdateCycle + 1) % updateSpread;
 	}
 
 	private void OnDestroy()
