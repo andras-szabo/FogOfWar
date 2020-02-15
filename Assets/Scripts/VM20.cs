@@ -204,6 +204,11 @@ public class VM20 : MonoBehaviour
 	private Transform mainCamTransform;
 	private Vector3[] mainCamFrustumPos = new Vector3[4];
 
+	public bool IsVisible(Vector3 worldPosition)
+	{
+		return discoveryMap != null && discoveryMap.IsWorldPositionVisible(worldPosition);
+	}
+
 	private void Awake()
 	{
 		Instance = this;

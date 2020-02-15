@@ -8,6 +8,7 @@ public class DiscoveryMap
 
 		pixelWidth = terrain.terrainData.heightmapWidth;
 		pixelHeight = terrain.terrainData.heightmapHeight;
+		blockLength = pixelWidth * pixelHeight;
 
 		texture = new Texture2D(pixelWidth, pixelHeight, TextureFormat.RGBA32, false);
 		texture.SetPixels32(new Color32[pixelWidth * pixelHeight]);
@@ -24,6 +25,19 @@ public class DiscoveryMap
 		emptyVisibilityBlock = new Color32[pixelWidth * pixelHeight];
 
 		heightMap = terrain.terrainData.GetHeights(0, 0, pixelWidth, pixelHeight);
+	}
+
+	public bool IsWorldPositionVisible(Vector3 position)
+	{
+		float mapPositionX = (position.x - terrainOffset.x) / terrainSize.x * mapSize.x;
+		float mapPositionY = (position.z - terrainOffset.z) / terrainSize.z * mapSize.y;
+
+		int x = Mathf.RoundToInt(mapPositionX);
+		int z = Mathf.RoundToInt(mapPositionY);
+
+		int index = z * pixelWidth + x;
+
+		return index >= 0 && index < blockLength && currentVisibilityMap.GetPixel(x, z).a > 0f;
 	}
 
 	public void ClearCurrentVisibilityBlock()
@@ -49,6 +63,8 @@ public class DiscoveryMap
 	public readonly Color32[] asPixelBlock;
 	public readonly Color32[] currentVisibilityPixelBlock;
 	public readonly Color32[] emptyVisibilityBlock;
+
+	public readonly int blockLength;
 
 	public readonly int pixelWidth;
 	public readonly int pixelHeight;
