@@ -255,6 +255,8 @@ public class VM20 : MonoBehaviour
 		discoveryMapMaterial.SetVector("_CamTopLeft", mainCamTransform.TransformVector(mainCamFrustumPos[1]));
 		discoveryMapMaterial.SetVector("_CamTopRight", mainCamTransform.TransformVector(mainCamFrustumPos[2]));
 		discoveryMapMaterial.SetVector("_CamBottomRight", mainCamTransform.TransformVector(mainCamFrustumPos[3]));
+
+		stencilMarkerMaterial.SetVector("_CamForward", mainCamTransform.forward);	
 	}
 
 }

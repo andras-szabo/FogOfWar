@@ -4,6 +4,7 @@
     {
 		_CurrentVisibilityMap("CurrentVisibility", 2D) = "white" {}
 		_TerrainSize("Terrain size", Vector) = (1000, 100, 1000)
+		_CamForward("CamForward", Vector) = (0, 0, 1)
     }
     SubShader
     {
@@ -41,6 +42,7 @@
 			sampler2D _CurrentVisibilityMap;
 			sampler2D_float _CameraDepthTexture;
 			float3 _TerrainSize;
+			float3 _CamForward;
 
             v2f vert (appdata v)
             {
@@ -59,10 +61,14 @@
             {
 				float3 fromCameraToFragment = i.worldSpacePosition - _WorldSpaceCameraPos;
 				fromCameraToFragment = normalize(fromCameraToFragment);
+
 				float rawDepth = DecodeFloatRG(tex2D(_CameraDepthTexture, i.screenPos.xy/i.screenPos.w));
 				float linearDepth = Linear01Depth(rawDepth);
-				float rayLength = linearDepth * _ProjectionParams.z;
 
+				float rayLength = linearDepth * _ProjectionParams.z;
+				float cos = dot(fromCameraToFragment, _CamForward);
+				rayLength = rayLength / cos;
+				
 				float3 worldSpaceVisibilityMapPos = _WorldSpaceCameraPos.xyz + fromCameraToFragment * rayLength;
 				float2 customUV = float2(worldSpaceVisibilityMapPos.x / _TerrainSize.x,
 										 worldSpaceVisibilityMapPos.z / _TerrainSize.z);
