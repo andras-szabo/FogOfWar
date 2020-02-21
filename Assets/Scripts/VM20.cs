@@ -223,7 +223,10 @@ public class VM20 : MonoBehaviour
 		discoveryMap = new DiscoveryMap(terrain);
 
 		discoveryMapMaterial.SetTexture("_Mask", discoveryMap.texture);
+		discoveryMapMaterial.SetTexture("_CurrentVisibility", discoveryMap.currentVisibilityMap);
+
 		stencilMarkerMaterial.SetTexture("_CurrentVisibilityMap", discoveryMap.currentVisibilityMap);
+
 		discoveryMapMaterial.SetVector("_TerrainSize", discoveryMap.terrainSize);
 		stencilMarkerMaterial.SetVector("_TerrainSize", discoveryMap.terrainSize);
 

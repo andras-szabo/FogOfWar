@@ -4,6 +4,7 @@
 	{
 		_MainTex("Texture", 2D) = "white" {}
 		_Mask("Mask", 2D) = "white" {}
+		_CurrentVisibility("Current visibility", 2D) = "white" {}
 
 		_CamBottomLeft("CamBottomLeft", Vector) = (0, 0, 0)
 		_CamTopLeft("CamTopLeft", Vector) = (0, 1, 0)
@@ -17,6 +18,7 @@
 		{
 			// No culling or depth
 			Cull Off ZWrite Off ZTest Always
+			Blend SrcAlpha OneMinusSrcAlpha
 
 			Pass
 			{
@@ -52,6 +54,7 @@
 
 				sampler2D _MainTex;
 				sampler2D _Mask;
+				sampler2D _CurrentVisibility;
 				sampler2D_float _CameraDepthTexture;
 
 				float3 _CamBottomLeft;
@@ -84,8 +87,23 @@
 					float2 customUV = float2(worldSpaceVisibilityMapPos.x / _TerrainSize.x,
 											 worldSpaceVisibilityMapPos.z / _TerrainSize.z);
 
-					fixed4 col = tex2D(_MainTex, i.uv) * tex2D(_Mask, customUV);
-					return col;
+					if (customUV.x < 0.0 || customUV.x > 1.0 || customUV.y < 0.0 || customUV.y > 1.0 || linearDepth >= 1.0)
+					{
+						return tex2D(_MainTex, i.uv);
+					}
+
+					fixed4 discoveryFactor = tex2D(_Mask, customUV);
+					fixed4 currentFactor = tex2D(_CurrentVisibility, customUV);
+					fixed4 originalPixelColor = tex2D(_MainTex, i.uv);
+
+					// If discovery, current: blend by 1
+					// If discovery but not current: blend by some inter value
+					// If no discovery, blend by all black
+
+					fixed4 colour = lerp(fixed4(0, 0, 0, 1), originalPixelColor, discoveryFactor.a);
+					fixed4 multiplier = lerp(fixed4(0.5, 0.5, 0.5, 1), fixed4(1, 1, 1, 1), currentFactor.a);
+
+					return colour * multiplier;
 				}
 
 				ENDCG
