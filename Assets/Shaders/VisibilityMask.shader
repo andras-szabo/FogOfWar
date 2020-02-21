@@ -96,10 +96,6 @@
 					fixed4 currentFactor = tex2D(_CurrentVisibility, customUV);
 					fixed4 originalPixelColor = tex2D(_MainTex, i.uv);
 
-					// If discovery, current: blend by 1
-					// If discovery but not current: blend by some inter value
-					// If no discovery, blend by all black
-
 					fixed4 colour = lerp(fixed4(0, 0, 0, 1), originalPixelColor, discoveryFactor.a);
 					fixed4 multiplier = lerp(fixed4(0.5, 0.5, 0.5, 1), fixed4(1, 1, 1, 1), currentFactor.a);
 
