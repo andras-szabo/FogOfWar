@@ -195,7 +195,6 @@ public class VM20 : MonoBehaviour
 	}
 
 	public Material discoveryMapMaterial;
-	public Material stencilMarkerMaterial;
 	public float updateIntervalSeconds = 0.1f;
 
 	public int updateSpread = 4;
@@ -224,11 +223,7 @@ public class VM20 : MonoBehaviour
 
 		discoveryMapMaterial.SetTexture("_Mask", discoveryMap.texture);
 		discoveryMapMaterial.SetTexture("_CurrentVisibility", discoveryMap.currentVisibilityMap);
-
-		stencilMarkerMaterial.SetTexture("_CurrentVisibilityMap", discoveryMap.currentVisibilityMap);
-
 		discoveryMapMaterial.SetVector("_TerrainSize", discoveryMap.terrainSize);
-		stencilMarkerMaterial.SetVector("_TerrainSize", discoveryMap.terrainSize);
 
 		mainCamera = Camera.main;
 		mainCamTransform = mainCamera.transform;
@@ -258,8 +253,6 @@ public class VM20 : MonoBehaviour
 		discoveryMapMaterial.SetVector("_CamTopLeft", mainCamTransform.TransformVector(mainCamFrustumPos[1]));
 		discoveryMapMaterial.SetVector("_CamTopRight", mainCamTransform.TransformVector(mainCamFrustumPos[2]));
 		discoveryMapMaterial.SetVector("_CamBottomRight", mainCamTransform.TransformVector(mainCamFrustumPos[3]));
-
-		stencilMarkerMaterial.SetVector("_CamForward", mainCamTransform.forward);	
 	}
 
 }
