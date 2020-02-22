@@ -27,6 +27,7 @@
 				#pragma fragment frag
 
 				#include "UnityCG.cginc"
+				#define MULTISAMPLE_AA 1
 
 				struct appdata
 				{
@@ -54,7 +55,10 @@
 
 				sampler2D _MainTex;
 				sampler2D _Mask;
+				float4 _Mask_TexelSize;
+
 				sampler2D _CurrentVisibility;
+				float4 _CurrentVisibility_TexelSize;
 				sampler2D_float _CameraDepthTexture;
 
 				float3 _CamBottomLeft;
@@ -71,6 +75,22 @@
 					float3 direction = lerp(horizontalBottom, horizontalTop, uv.y);
 
 					return direction;
+				}
+
+				fixed4 multiSample(sampler2D tex, float2 uv, float4 texelSize)
+				{
+					float2 d = texelSize.xy;
+
+					half4 color = tex2D(tex, uv);
+
+					color += tex2D(tex, uv + d);
+					color += tex2D(tex, uv - d);
+					color += tex2D(tex, uv + float2(-d.x, d.y));
+					color += tex2D(tex, uv + float2(d.x, -d.y));
+
+					color /= 4.0;
+
+					return fixed4(color);
 				}
 
 				fixed4 frag(v2f i) : SV_Target
@@ -92,13 +112,17 @@
 						return tex2D(_MainTex, i.uv);
 					}
 
+					#if MULTISAMPLE_AA == 1
+					fixed4 discoveryFactor = multiSample(_Mask, customUV, _Mask_TexelSize);
+					fixed4 currentFactor = multiSample(_CurrentVisibility, customUV, _CurrentVisibility_TexelSize);
+					#else
 					fixed4 discoveryFactor = tex2D(_Mask, customUV);
 					fixed4 currentFactor = tex2D(_CurrentVisibility, customUV);
+					#endif
 					fixed4 originalPixelColor = tex2D(_MainTex, i.uv);
 
 					fixed4 colour = lerp(fixed4(0, 0, 0, 1), originalPixelColor, discoveryFactor.a);
 					fixed4 multiplier = lerp(fixed4(0.5, 0.5, 0.5, 1), fixed4(1, 1, 1, 1), currentFactor.a);
-
 					return colour * multiplier;
 				}
 

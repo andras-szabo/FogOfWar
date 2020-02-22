@@ -11,6 +11,8 @@ public class DiscoveryMap
 		blockLength = pixelWidth * pixelHeight;
 
 		texture = new Texture2D(pixelWidth, pixelHeight, TextureFormat.RGBA32, false);
+		texture.wrapMode = TextureWrapMode.Clamp;
+		texture.filterMode = FilterMode.Bilinear;
 		texture.SetPixels32(new Color32[pixelWidth * pixelHeight]);
 
 		currentVisibilityMap = new Texture2D(pixelWidth, pixelHeight, TextureFormat.RGBA32, false);
