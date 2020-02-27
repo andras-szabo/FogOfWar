@@ -88,7 +88,7 @@
 					color += tex2D(tex, uv + float2(-d.x, d.y));
 					color += tex2D(tex, uv + float2(d.x, -d.y));
 
-					color /= 4.0;
+					color /= 5.0;
 
 					return fixed4(color);
 				}
