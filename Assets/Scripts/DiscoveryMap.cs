@@ -53,6 +53,20 @@ public class DiscoveryMap
 		Object.Destroy(texture);
 	}
 
+	public Vector2 CalculateMapPosition(Vector3 worldPosition)
+	{
+		float x = (worldPosition.x - terrainOffset.x) / terrainSize.x * mapSize.x;
+		float y = (worldPosition.z - terrainOffset.z) / terrainSize.z * mapSize.y;
+
+		return new Vector2(x, y);
+	}
+
+	public Vector2 CalculateMapSpaceDimensions(Vector3 worldSpaceSize)
+	{
+		return new Vector2(Mathf.Abs(worldSpaceSize.x / terrainSize.x * mapSize.x),
+						   Mathf.Abs(worldSpaceSize.z / terrainSize.z * mapSize.y));
+	}
+
 	public readonly Terrain terrain;
 
 	public readonly Texture2D texture;
