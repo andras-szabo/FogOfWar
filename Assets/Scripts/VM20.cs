@@ -221,8 +221,14 @@ public class VM20 : MonoBehaviour
 	{
 		UpdateCamera();
 
-		if (updateTask == null || updateTask.IsCompleted)
+		if (updateTask == null || updateTask.IsCompleted || updateTask.IsFaulted)
 		{
+			if (updateTask != null && updateTask.IsFaulted)
+			{
+				// ... handle errors ... 			
+				throw updateTask.Exception;
+			}
+
 			if (updateTask != null)
 			{
 				discoveryMap.texture.SetPixels32(discoveryMap.asPixelBlock);
