@@ -185,10 +185,6 @@ public class VM20 : MonoBehaviour
 	}
 
 	public Material discoveryMapMaterial;
-	public float updateIntervalSeconds = 0.1f;
-
-	public int updateSpread = 4;
-	private int currentUpdateCycle = 0;
 
 	private DiscoveryMap discoveryMap;
 	private Terrain terrain;
@@ -240,7 +236,7 @@ public class VM20 : MonoBehaviour
 
 	private async Task UpdateOnSideThread()
 	{
-		await Task.Run(() => UpdateDiscoveryStatusOnSideThread(discoveryMap, EntityManager<Observer>.GetActiveEntities()))
+		await Task.Run(() => UpdateDiscoveryStatusOnSideThread(discoveryMap, EntityManager.GetActiveObservers()))
 				  .ConfigureAwait(false);
 	}
 
