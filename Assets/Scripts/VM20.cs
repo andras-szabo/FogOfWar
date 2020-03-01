@@ -29,22 +29,8 @@ public class VM20 : MonoBehaviour
 	private static int mapPixelWidth;
 	private static int mapPixelHeight;
 
-	public static void UpdateDiscoveryStatusOnSideThread(DiscoveryMap discoveryMap, List<Observer> activeObservers)
+	public static void UpdateDiscoveryStatusOnSideThread(DiscoveryMap discoveryMap, List<Observer.Info> observerInfo)
 	{
-		if (observerInfo == null)
-		{
-			observerInfo = new List<Observer.Info>(activeObservers.Count);
-		}
-		else
-		{
-			observerInfo.Clear();
-		}
-
-		for (int i = 0; i < activeObservers.Count; ++i)
-		{
-			observerInfo.Add(new Observer.Info(activeObservers[i]));
-		}
-
 		discoveryMap.ClearCurrentVisibilityBlock();
 
 		pixelBlock = discoveryMap.asPixelBlock;
@@ -53,7 +39,7 @@ public class VM20 : MonoBehaviour
 		mapPixelWidth = discoveryMap.pixelWidth;
 		mapPixelHeight = discoveryMap.pixelHeight;
 
-		for (int i = 0; i < activeObservers.Count; ++i)
+		for (int i = 0; i < observerInfo.Count; ++i)
 		{
 			var observer = observerInfo[i];
 
@@ -242,7 +228,23 @@ public class VM20 : MonoBehaviour
 
 	private async Task UpdateOnSideThread()
 	{
-		await Task.Run(() => UpdateDiscoveryStatusOnSideThread(discoveryMap, EntityManager.GetActiveObservers()))
+		var activeObservers = EntityManager.GetActiveObservers();
+
+		if (observerInfo == null)
+		{
+			observerInfo = new List<Observer.Info>(activeObservers.Count);
+		}
+		else
+		{
+			observerInfo.Clear();
+		}
+
+		for (int i = 0; i < activeObservers.Count; ++i)
+		{
+			observerInfo.Add(new Observer.Info(activeObservers[i]));
+		}
+
+		await Task.Run(() => UpdateDiscoveryStatusOnSideThread(discoveryMap, observerInfo))
 				  .ConfigureAwait(false);
 	}
 
