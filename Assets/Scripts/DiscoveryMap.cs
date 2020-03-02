@@ -6,8 +6,8 @@ public class DiscoveryMap
 	{
 		this.terrain = terrain;
 
-		pixelWidth = terrain.terrainData.heightmapWidth;
-		pixelHeight = terrain.terrainData.heightmapHeight;
+		pixelWidth = terrain.terrainData.heightmapResolution;
+		pixelHeight = terrain.terrainData.heightmapResolution;
 		blockLength = pixelWidth * pixelHeight;
 
 		texture = new Texture2D(pixelWidth, pixelHeight, TextureFormat.RGBA32, false);
