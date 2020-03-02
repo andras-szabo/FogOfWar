@@ -171,6 +171,7 @@ public class VM20 : MonoBehaviour
 	}
 
 	public Material discoveryMapMaterial;
+    public MinimapFrustumView minimapFrustumView;
 
 	private DiscoveryMap discoveryMap;
 	private Terrain terrain;
@@ -253,6 +254,8 @@ public class VM20 : MonoBehaviour
 		discoveryMap?.Clear();
 	}
 
+    private Vector3[] frustumCornersWorldSpace = new Vector3[4];
+
 	private void UpdateCamera()
 	{
 		mainCamera.CalculateFrustumCorners(mainCamera.rect, mainCamera.nearClipPlane, Camera.MonoOrStereoscopicEye.Mono, mainCamFrustumPos);
@@ -260,10 +263,17 @@ public class VM20 : MonoBehaviour
 		// The shader expects directions to the view frustum
 		// corners in world space.
 
-		discoveryMapMaterial.SetVector("_CamBottomLeft", mainCamTransform.TransformVector(mainCamFrustumPos[0]));
-		discoveryMapMaterial.SetVector("_CamTopLeft", mainCamTransform.TransformVector(mainCamFrustumPos[1]));
-		discoveryMapMaterial.SetVector("_CamTopRight", mainCamTransform.TransformVector(mainCamFrustumPos[2]));
-		discoveryMapMaterial.SetVector("_CamBottomRight", mainCamTransform.TransformVector(mainCamFrustumPos[3]));
+        for (int i = 0; i < 4; ++i)
+        {
+            frustumCornersWorldSpace[i] = mainCamTransform.TransformVector(mainCamFrustumPos[i]);
+        }
+
+		discoveryMapMaterial.SetVector("_CamBottomLeft", frustumCornersWorldSpace[0]);
+        discoveryMapMaterial.SetVector("_CamTopLeft", frustumCornersWorldSpace[1]);
+        discoveryMapMaterial.SetVector("_CamTopRight", frustumCornersWorldSpace[2]);
+        discoveryMapMaterial.SetVector("_CamBottomRight", frustumCornersWorldSpace[3]);
+
+        minimapFrustumView.Setup(frustumCornersWorldSpace, mainCamTransform.position, discoveryMap.terrainOffset, discoveryMap.terrainSize);
 	}
 
 }
