@@ -3,12 +3,25 @@ using UnityEngine;
 
 public class Observer : MonoWithCachedTransform
 {
+	public struct Info
+	{
+		public float mapPositionX, mapPositionY, height;
+		public float viewRadiusMapUnits;
+
+		public Info(Observer o)
+		{
+			mapPositionX = o.mapPositionX;
+			mapPositionY = o.mapPositionY;
+			height = o.height;
+			viewRadiusMapUnits = o.ViewRadiusMapUnits;
+		}
+	}
+
 	[HideInInspector] public float mapPositionX, mapPositionY, height;
 	[Range(1f, 50f)]  public float viewRadiusWorldUnits;
 
 	public float ViewRadiusMapUnits { get; private set; }
 	public bool HasMovedSinceLastUpdate { get; private set; }
-	public bool HasUpdatedEver { get; set; }
 
 	private int entityID;
 	private Vector3 terrainOffset;
@@ -44,8 +57,6 @@ public class Observer : MonoWithCachedTransform
 
 		UpdatePosition(CachedTransform.position);
 		UpdateRadius(worldRadius);
-
-		HasUpdatedEver = false;
 	}
 
 	public bool UpdatePosition(Vector3 worldPosition)
