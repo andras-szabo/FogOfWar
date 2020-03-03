@@ -18,6 +18,8 @@ public class MinimapFrustumView : MonoBehaviour
     {
         LineRenderer.useWorldSpace = true;
         LineRenderer.generateLightingData = false;
+        LineRenderer.positionCount = 4;
+        LineRenderer.loop = true;
     }
 
     public void Setup(Vector3[] camFrustumCornerWorldSpaceVectors, Vector3 camPos, Vector3 terrainOffset, Vector3 terrainSize)
@@ -29,7 +31,7 @@ public class MinimapFrustumView : MonoBehaviour
         float camHeight = camPos.y - terrainOffset.y;
         Vector3 down = new Vector3(0f, -1f, 0f);
 
-        Vector3[] frustumViewRelativePositions = new Vector3[4];
+        Vector3[] frustumViewWorldPositions = new Vector3[4];
 
         for (int i = 0; i < 4; ++i)
         {
@@ -38,12 +40,12 @@ public class MinimapFrustumView : MonoBehaviour
             float cosAngleToVertical = Vector3.Dot(cornerVector, down);
 
             float frustumCornerToGroundDistance = camHeight / cosAngleToVertical;
+            
             Vector3 groundHitPosition = camPos + (frustumCornerToGroundDistance * cornerVector) - terrainOffset;
 
-            frustumViewRelativePositions[i] = new Vector3(groundHitPosition.x / 1f, groundHitPosition.y,
-                                                          groundHitPosition.z / 1f);
+            frustumViewWorldPositions[i] = groundHitPosition;
         }
 
-        LineRenderer.SetPositions(frustumViewRelativePositions);
-    }
+        LineRenderer.SetPositions(frustumViewWorldPositions);
+     }
 }
