@@ -43,8 +43,9 @@ public class CarSteering : MonoWithCachedTransform
 
                 if (Vector3.Dot(toSteeringTarget, new Vector3(CachedTransform.forward.x, 0f, CachedTransform.forward.z).normalized) < cosMaxTurnAngle)
                 {
-                    // Check cross product to see if right or left turn
-                    // then apply (sina, cosa) or (-sina, cosa) as toSteeringTarget
+                    bool isTurningRight = Vector3.Cross(toSteeringTarget, CachedTransform.forward).z > 0f;
+                    float multiplier = isTurningRight ? -1f : 1f;
+                    toSteeringTarget = new Vector3(multiplier * Mathf.Sin(45f * Mathf.Deg2Rad), 0f, Mathf.Cos(45f * Mathf.Deg2Rad));
                 }
 
                 targetWheelRotation = Quaternion.LookRotation(toSteeringTarget, Vector3.up) * Quaternion.Euler(0f, 0f, 90f);
