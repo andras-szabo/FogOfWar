@@ -17,6 +17,9 @@ public class CarSteering : MonoWithCachedTransform
     private float wheelRotationDuration;
     private float cosMaxTurnAngle;
 
+    private Vector3 currentSteeringTarget;
+    private Vector3 targetForward;
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -37,15 +40,18 @@ public class CarSteering : MonoWithCachedTransform
 
             if (steeringTarget != previousSteeringTarget)
             {
-                steeringTarget.y = frontLeftWheel.position.y;
+                steeringTarget.y = CachedTransform.position.y;
+                currentSteeringTarget = steeringTarget;
                 startingWheelRotation = frontLeftWheel.rotation;
                 Vector3 toSteeringTarget = (steeringTarget - transform.position).normalized;
 
-                if (Vector3.Dot(toSteeringTarget, new Vector3(CachedTransform.forward.x, 0f, CachedTransform.forward.z).normalized) < cosMaxTurnAngle)
+                if (Vector3.Dot(toSteeringTarget, CachedTransform.forward) < cosMaxTurnAngle)
                 {
-                    bool isTurningRight = Vector3.Cross(toSteeringTarget, CachedTransform.forward).z > 0f;
-                    float multiplier = isTurningRight ? -1f : 1f;
-                    toSteeringTarget = new Vector3(multiplier * Mathf.Sin(45f * Mathf.Deg2Rad), 0f, Mathf.Cos(45f * Mathf.Deg2Rad));
+                    bool isTurningRight = Vector3.Cross(toSteeringTarget, frontLeftWheel.forward).y <= 0f;
+
+                    float multiplier = isTurningRight ? 1f : -1f;
+
+                    toSteeringTarget = CachedTransform.rotation * new Vector3(multiplier * Mathf.Sin(45f * Mathf.Deg2Rad), 0f, Mathf.Cos(45f * Mathf.Deg2Rad));
                 }
 
                 targetWheelRotation = Quaternion.LookRotation(toSteeringTarget, Vector3.up) * Quaternion.Euler(0f, 0f, 90f);
@@ -53,6 +59,7 @@ public class CarSteering : MonoWithCachedTransform
                 wheelRotationDuration = Vector3.Angle(frontLeftWheel.forward, toSteeringTarget) / (agent.angularSpeed / 8f);
 
                 previousSteeringTarget = steeringTarget;
+                targetForward = targetWheelRotation * Vector3.forward;
             }
 
             elapsedInWheelRotation += Time.deltaTime;
@@ -93,6 +100,17 @@ public class CarSteering : MonoWithCachedTransform
         {
             Gizmos.color = GetNavAgentStatusColor();
             Gizmos.DrawSphere(CachedTransform.position + Vector3.up * 2f, 0.5f);
+
+            Gizmos.color = Color.blue;
+            Gizmos.DrawRay(CachedTransform.position + Vector3.up * 2f, frontLeftWheel.forward * 3f);
+
+            Gizmos.color = Color.yellow;
+            var toTarget = currentSteeringTarget - CachedTransform.position;
+            toTarget.y = CachedTransform.position.y + 2f;
+            Gizmos.DrawRay(CachedTransform.position + Vector3.up * 2f, toTarget.normalized * 3f);
+
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawRay(CachedTransform.position + Vector3.up * 2f, targetForward * 3f);
         }
     }
 }
