@@ -2,24 +2,52 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(LineRenderer))]
 public class MinimapFrustumView : MonoBehaviour
 {
-    private LineRenderer lr;
-    private LineRenderer LineRenderer
-    {
-        get
-        {
-            return lr ?? (lr = GetComponent<LineRenderer>());
-        }
-    }
+    public Material material;
+
+    private Camera mainCam;
+    private Mesh mesh;
+
+    private Vector3[] vertices;
 
     private void Start()
     {
-        LineRenderer.useWorldSpace = true;
-        LineRenderer.generateLightingData = false;
-        LineRenderer.positionCount = 4;
-        LineRenderer.loop = true;
+        mesh = CreateDefaultMesh();
+        mainCam = Camera.main;
+    }
+
+    private Mesh CreateDefaultMesh()
+    {
+        vertices = new Vector3[]
+        {
+            new Vector3(-0.5f, -0.5f, 1f),
+            new Vector3(-0.5f, 0.5f, 1f),
+            new Vector3(0.5f, 0.5f, 1f),
+            new Vector3(0.5f, -0.5f, 1f)
+        };
+
+        var triangles = new int[]
+        {
+            0, 1, 2,
+            2, 3, 0
+        };
+
+        Mesh defaultMesh = new Mesh();
+
+        defaultMesh.vertices = vertices;
+        defaultMesh.triangles = triangles;
+
+        return defaultMesh;
+    }
+
+
+    private void Update()
+    {
+        //Graphics.DrawMesh(mesh, transform.position, transform.rotation, material, 0);
+        //Graphics.DrawMesh(mesh, Matrix4x4.identity, material, 0);
+        Graphics.DrawMesh(mesh, mainCam.transform.position + mainCam.transform.forward, 
+                                Quaternion.LookRotation(mainCam.transform.forward), material, 0);
     }
 
     public void Setup(Vector3[] camFrustumCornerWorldSpaceVectors, Vector3 camPos, Vector3 terrainOffset, Vector3 terrainSize)
@@ -46,6 +74,14 @@ public class MinimapFrustumView : MonoBehaviour
             frustumViewWorldPositions[i] = groundHitPosition;
         }
 
-        LineRenderer.SetPositions(frustumViewWorldPositions);
+        var mapSize = VM20.DiscoveryMap.mapSize;
+        
+        for (int i = 0; i < 4; ++i)
+        {
+            var w = frustumViewWorldPositions[i];
+            vertices[i] = new Vector3(w.x / mapSize.x - 0.5f, w.z / mapSize.y - 0.5f, 0f);
+        }
+
+        mesh.vertices = vertices;
      }
 }
