@@ -1,87 +1,91 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class MinimapFrustumView : MonoBehaviour
+public class MinimapFrustumView : MaskableGraphic
 {
-    public Material material;
+	private Mesh mesh;
+	private Camera mainCam;
+	private Vector3[] vertices;
 
-    private Camera mainCam;
-    private Mesh mesh;
+	protected override void Start()
+	{
+		mesh = CreateDefaultMesh();
+		mainCam = Camera.main;
+		canvasRenderer.SetMaterial(material, null);
+	}
 
-    private Vector3[] vertices;
+	private Mesh CreateDefaultMesh()
+	{
+		vertices = new Vector3[]
+		{
+			new Vector3(-0.5f, -0.5f, 1f),
+			new Vector3(-0.5f, 0.5f, 1f),
+			new Vector3(0.5f, 0.5f, 1f),
+			new Vector3(0.5f, -0.5f, 1f)
+		};
 
-    private void Start()
-    {
-        mesh = CreateDefaultMesh();
-        mainCam = Camera.main;
-    }
+		var triangles = new int[]
+		{
+			0, 1, 2,
+			2, 3, 0
+		};
 
-    private Mesh CreateDefaultMesh()
-    {
-        vertices = new Vector3[]
-        {
-            new Vector3(-0.5f, -0.5f, 1f),
-            new Vector3(-0.5f, 0.5f, 1f),
-            new Vector3(0.5f, 0.5f, 1f),
-            new Vector3(0.5f, -0.5f, 1f)
-        };
+		Mesh defaultMesh = new Mesh();
 
-        var triangles = new int[]
-        {
-            0, 1, 2,
-            2, 3, 0
-        };
+		defaultMesh.vertices = vertices;
+		defaultMesh.triangles = triangles;
 
-        Mesh defaultMesh = new Mesh();
+		return defaultMesh;
+	}
 
-        defaultMesh.vertices = vertices;
-        defaultMesh.triangles = triangles;
+	private void Update()
+	{
+		//Graphics.DrawMesh(mesh, transform.position, transform.rotation, material, 0);
 
-        return defaultMesh;
-    }
+		//Graphics.DrawMesh(mesh, Matrix4x4.identity, material, 0);
+		//Graphics.DrawMesh(mesh, mainCam.transform.position + mainCam.transform.forward,
+		//Quaternion.LookRotation(mainCam.transform.forward), material, 0);
+		canvasRenderer.SetMesh(mesh);
+	}
 
+	public void Setup(Vector3[] camFrustumCornerWorldSpaceVectors, Vector3 camPos, Vector3 terrainOffset, Vector3 terrainSize)
+	{
+		// Assumption: frustum corner vectors are sent in some logical order, such
+		// that we can connect each to the next one, with wraparound, to get the
+		// final image.
 
-    private void Update()
-    {
-        //Graphics.DrawMesh(mesh, transform.position, transform.rotation, material, 0);
-        //Graphics.DrawMesh(mesh, Matrix4x4.identity, material, 0);
-        Graphics.DrawMesh(mesh, mainCam.transform.position + mainCam.transform.forward, 
-                                Quaternion.LookRotation(mainCam.transform.forward), material, 0);
-    }
+		float camHeight = camPos.y - terrainOffset.y;
+		Vector3 down = new Vector3(0f, -1f, 0f);
 
-    public void Setup(Vector3[] camFrustumCornerWorldSpaceVectors, Vector3 camPos, Vector3 terrainOffset, Vector3 terrainSize)
-    {
-        // Assumption: frustum corner vectors are sent in some logical order, such
-        // that we can connect each to the next one, with wraparound, to get the
-        // final image.
+		Vector3[] frustumViewWorldPositions = new Vector3[4];
 
-        float camHeight = camPos.y - terrainOffset.y;
-        Vector3 down = new Vector3(0f, -1f, 0f);
+		var mapSize = VM20.DiscoveryMap.mapSize;
 
-        Vector3[] frustumViewWorldPositions = new Vector3[4];
+		for (int i = 0; i < 4; ++i)
+		{
+			Vector3 cornerVector = camFrustumCornerWorldSpaceVectors[i].normalized;
 
-        for (int i = 0; i < 4; ++i)
-        {
-            Vector3 cornerVector = camFrustumCornerWorldSpaceVectors[i].normalized;
+			float cosAngleToVertical = Mathf.Max(0.01f, Vector3.Dot(cornerVector, down));
+			float frustumCornerToGroundDistance = camHeight / cosAngleToVertical;
 
-            float cosAngleToVertical = Vector3.Dot(cornerVector, down);
+			Vector3 groundHitPosition = camPos + (frustumCornerToGroundDistance * cornerVector) - terrainOffset;
+			frustumViewWorldPositions[i] = groundHitPosition;
+		}
 
-            float frustumCornerToGroundDistance = camHeight / cosAngleToVertical;
-            
-            Vector3 groundHitPosition = camPos + (frustumCornerToGroundDistance * cornerVector) - terrainOffset;
+		RectTransform rt = GetComponent<RectTransform>();
+		float xFactor = rt.rect.width;
+		float yFactor = rt.rect.height;
 
-            frustumViewWorldPositions[i] = groundHitPosition;
-        }
+		for (int i = 0; i < 4; ++i)
+		{
+			var w = frustumViewWorldPositions[i];
+			float x = w.x / mapSize.x - 0.5f;
+			float y = w.z / mapSize.y - 0.5f;
+			vertices[i] = new Vector3(x * xFactor, y * yFactor);
+		}
 
-        var mapSize = VM20.DiscoveryMap.mapSize;
-        
-        for (int i = 0; i < 4; ++i)
-        {
-            var w = frustumViewWorldPositions[i];
-            vertices[i] = new Vector3(w.x / mapSize.x - 0.5f, w.z / mapSize.y - 0.5f, 0f);
-        }
-
-        mesh.vertices = vertices;
-     }
+		mesh.vertices = vertices;
+	}
 }
